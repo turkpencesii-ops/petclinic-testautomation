@@ -1,5 +1,6 @@
 package com.adesso.tests;
 
+import com.adesso.main.Variables;
 import io.github.bonigarcia.wdm.WebDriverManager;
 import org.junit.jupiter.api.*;
 import org.openqa.selenium.*;
@@ -7,67 +8,94 @@ import org.openqa.selenium.chrome.*;
 import org.openqa.selenium.support.ui.*;
 
 import java.time.Duration;
+import java.util.Random;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class AddPetTest {
+class OwnerAddAndEditPetForFelixTest extends Variables {
 
 	WebDriver driver;
+
 	WebDriverWait wait;
 
 	@BeforeEach
 	void setUp() {
-		System.setProperty("webdriver.http.factory","jdk-http-client");
 		WebDriverManager.chromedriver().setup();
-
-		ChromeOptions opts = new ChromeOptions();
-		opts.addArguments("--headless=new","--window-size=1920,1080");
-		driver = new ChromeDriver(opts);
-
-		driver.manage().timeouts().implicitlyWait(Duration.ofSeconds(0));
-		wait = new WebDriverWait(driver, Duration.ofSeconds(8));
-
+		driver = new ChromeDriver();
+		driver.manage().window().maximize();
+		wait = new WebDriverWait(driver, Duration.ofSeconds(6));
 		driver.get("http://localhost:8080");
+
 	}
 
 	@Test
-	void addPet_nameMustBeUniquePerOwner() {
-		// Owner anlegen
-		wait.until(ExpectedConditions.elementToBeClickable(By.linkText("FIND OWNERS"))).click();
-		driver.findElement(By.linkText("Add Owner")).click();
-		driver.findElement(By.id("firstName")).sendKeys("Pet");
-		driver.findElement(By.id("lastName")).sendKeys("Owner" + System.currentTimeMillis());
-		driver.findElement(By.id("address")).sendKeys("Teststraße 1");
-		driver.findElement(By.id("city")).sendKeys("Heidelberg");
-		driver.findElement(By.id("telephone")).sendKeys("123456789");
-		driver.findElement(By.cssSelector("button[type='submit']")).click();
-		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath("//h2[text()='Owner Information']")));
+	void findOwner_addPet_thenEditPet() throws InterruptedException {
+		// ---------- Owner suchen ----------
+		wait.until(ExpectedConditions.elementToBeClickable(Variables.Find_Owner)).click();
+		WebElement lastName = wait.until(ExpectedConditions.visibilityOfElementLocated(Variables.lastname));
+		lastName.clear();
+		lastName.sendKeys("Souza");
+		driver.findElement(Variables.submit_button).click();
 
-		// Erstes Pet hinzufügen
-		driver.findElement(By.linkText("Add New Pet")).click();
-		driver.findElement(By.id("name")).sendKeys("Mia");
-		driver.findElement(By.id("birthDate")).sendKeys("2019-01-01");
-		new Select(driver.findElement(By.id("type"))).selectByVisibleText("cat");
-		driver.findElement(By.cssSelector("button[type='submit']")).click();
-		assertTrue(driver.findElements(By.xpath("//dd[contains(.,'Mia')]")).size() > 0);
+		// Owner-Detailseite sichtbar
+		wait.until(
+				ExpectedConditions.visibilityOfElementLocated(Variables.Owner_Information));
+		assertTrue(driver.getPageSource().contains("Alex Souza"));
 
-		// Noch einmal mit demselben Namen versuchen
-		driver.findElement(By.linkText("Add New Pet")).click();
-		driver.findElement(By.id("name")).sendKeys("Mia");
-		driver.findElement(By.id("birthDate")).sendKeys("2020-02-02");
-		new Select(driver.findElement(By.id("type"))).selectByVisibleText("cat");
-		driver.findElement(By.cssSelector("button[type='submit']")).click();
+		// ---------- Neues Pet hinzufügen ----------
+		wait.until(ExpectedConditions.elementToBeClickable(Variables.Add_new_pet)).click();
+		wait.until(ExpectedConditions.urlMatches(".*/owners/\\d+/pets/new$"));
 
-		// Erwartung: Fehlermeldung oder Hinweis, dass der Name bereits existiert
-		boolean hasError = driver.findElements(By.cssSelector(".help-inline")).size() > 0
-			|| driver.getPageSource().toLowerCase().contains("already exists")
-			|| driver.getPageSource().toLowerCase().contains("is already used");
+		Random rand = new Random();
+		int n = rand.nextInt(90) + 10;
 
-		assertTrue(hasError, "Der gleiche Pet-Name darf für einen Owner nicht doppelt vergeben werden.");
+		String petName = "Buddy" + n;
+		wait.until(ExpectedConditions.visibilityOfElementLocated(Variables.Pet_name)).sendKeys(petName);
+
+		WebElement birth = driver.findElement(Variables.Pet_birthday);
+		((JavascriptExecutor) driver).executeScript("arguments[0].value='2024-06-10';", birth);
+
+		new Select(driver.findElement(By.id("type"))).selectByVisibleText("dog");
+
+		WebElement saveBtn = wait
+			.until(ExpectedConditions.elementToBeClickable(By.cssSelector("button[type='submit']")));
+		((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'});", saveBtn);
+		saveBtn.click();
+
+		// Pet muss auf Owner-Seite erscheinen
+		wait.until(
+				ExpectedConditions.visibilityOfElementLocated(By.xpath("//h2[normalize-space()='Owner Information']")));
+		assertTrue(driver.getPageSource().contains(petName), "Neues Pet sollte sichtbar sein.");
+
+		// ---------- Letztes Pet bearbeiten ----------
+		By lastEdit = By.xpath("(//a[normalize-space()='Edit Pet'])[last()]");
+		WebElement edit = wait.until(ExpectedConditions.elementToBeClickable(lastEdit));
+		((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'});", edit);
+		edit.click();
+
+		wait.until(ExpectedConditions.urlMatches(".*/owners/\\d+/pets/\\d+/edit$"));
+		WebElement nameInput = wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("name")));
+		nameInput.clear();
+		String editedName = petName + "-Edited";
+		nameInput.sendKeys(editedName);
+
+		WebElement saveEdit = driver.findElement(Variables.submit_button);
+		((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'});", saveEdit);
+		saveEdit.click();
+
+		// Änderung prüfen
+		wait.until(
+				ExpectedConditions.visibilityOfElementLocated(Variables.Owner_Information));
+		assertTrue(driver.getPageSource().contains(editedName), "Bearbeiteter Pet-Name sollte sichtbar sein.");
+
+
+		Thread.sleep(2000);
 	}
 
 	@AfterEach
 	void tearDown() {
-		if (driver != null) driver.quit();
+		if (driver != null)
+			driver.quit();
 	}
+
 }

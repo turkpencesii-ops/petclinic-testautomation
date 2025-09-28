@@ -167,4 +167,14 @@ The Spring PetClinic sample application is released under version 2.0 of the [Ap
 =======
 # petclinic-testautomation
 Automatisierte Tests für Spring PetClinic (Selenium, Java, Maven, JUnit)
->>>>>>> 194ed19cd9e1e9dc5d51d8e5a152d9c9ad21d6d9
+# 🧪 Spring PetClinic Test Automation 
+This repository contains **UI Test Automation** for the [Spring PetClinic](https://spring-petclinic.github.io/) sample application. 
+The project demonstrates professional **Test Automation** practices using: 
+- ✅ **Selenium WebDriver**
+- ✅ **JUnit/TestNG (Java)**
+- ✅ **Page Object Model (POM)**
+- ✅ **Cross-Browser Testing**
+- ✅ **GitHub Actions (CI/CD)**
+
+  --- ## 📂 Project Structure
+

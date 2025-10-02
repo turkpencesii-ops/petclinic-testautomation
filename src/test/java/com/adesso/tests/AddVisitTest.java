@@ -28,7 +28,7 @@ class AddVisitTest extends Variables  {
 	}
 
 	@Test
-	void addVisit_forExistingPet() {turkpencesii-
+	void addVisit_forExistingPet() {
 		// Owner "Burak Test" suchen und öffnen
 		wait.until(ExpectedConditions.elementToBeClickable(Variables.Find_Owner)).click();
 		WebElement lastName = wait.until(ExpectedConditions.visibilityOfElementLocated(Variables.lastname));

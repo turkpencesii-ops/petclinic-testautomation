@@ -38,8 +38,7 @@ class OwnerAddAndEditPetForFelixTest extends Variables {
 		driver.findElement(Variables.submit_button).click();
 
 		// Owner-Detailseite sichtbar
-		wait.until(
-				ExpectedConditions.visibilityOfElementLocated(Variables.Owner_Information));
+		wait.until(ExpectedConditions.visibilityOfElementLocated(Variables.Owner_Information));
 		assertTrue(driver.getPageSource().contains("Alex Souza"));
 
 		// ---------- Neues Pet hinzufügen ----------
@@ -84,10 +83,8 @@ class OwnerAddAndEditPetForFelixTest extends Variables {
 		saveEdit.click();
 
 		// Änderung prüfen
-		wait.until(
-				ExpectedConditions.visibilityOfElementLocated(Variables.Owner_Information));
+		wait.until(ExpectedConditions.visibilityOfElementLocated(Variables.Owner_Information));
 		assertTrue(driver.getPageSource().contains(editedName), "Bearbeiteter Pet-Name sollte sichtbar sein.");
-
 
 		Thread.sleep(2000);
 	}

@@ -11,7 +11,7 @@ import java.time.Duration;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class AddVisitTest extends Variables  {
+class AddVisitTest extends Variables {
 
 	WebDriver driver;
 
@@ -49,8 +49,7 @@ class AddVisitTest extends Variables  {
 			((JavascriptExecutor) driver).executeScript("arguments[0].value='2023-05-05';", birth);
 			new Select(driver.findElement(By.id("type"))).selectByVisibleText("dog");
 			driver.findElement(Variables.submit_button).click();
-			wait.until(ExpectedConditions
-				.visibilityOfElementLocated(Variables.Owner_Information));
+			wait.until(ExpectedConditions.visibilityOfElementLocated(Variables.Owner_Information));
 		}
 
 		// Visit hinzufügen (letztes Pet)
@@ -58,12 +57,12 @@ class AddVisitTest extends Variables  {
 		((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView({block:'center'});", visit1);
 		visit1.click();
 
-		wait.until(ExpectedConditions.visibilityOfElementLocated(Variables.description)).sendKeys("Routineuntersuchung");
+		wait.until(ExpectedConditions.visibilityOfElementLocated(Variables.description))
+			.sendKeys("Routineuntersuchung");
 		driver.findElement(Variables.submit_button).click();
 
 		// Prüfung
-		wait.until(
-				ExpectedConditions.visibilityOfElementLocated(Variables.Owner_Information));
+		wait.until(ExpectedConditions.visibilityOfElementLocated(Variables.Owner_Information));
 		assertTrue(driver.getPageSource().contains("Routineuntersuchung"), "Visit sollte gelistet sein.");
 
 	}
